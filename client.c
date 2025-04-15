@@ -27,7 +27,6 @@ int main(int argc, char const* argv[]){
 	if(connectTo(&sfd, serverPort, hints) != 0) return 1;
 
 	int  	len;
-    int	lenread = 0;
 	
 	for(;;){
 		printf("Input message to Echo: ");
@@ -62,13 +61,6 @@ int main(int argc, char const* argv[]){
         
         	inbuf[n] = '\0';
 	      
-		if(lenread == -1){
-			perror("error on read");
-			return 1;
-		}
-			
-		inbuf[n] = 0;
-
 		printf("Received message from server: %s\n", inbuf);
 	}
 
