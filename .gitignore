@@ -345,17 +345,6 @@ GitHub.sublime-settings
 *.tmproject
 tmtags
 
-##### VisualStudioCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-*.code-workspace
-
-# Local History for Visual Studio Code
-.history/
-
 ##### NetBeans
 **/nbproject/private/
 **/nbproject/Makefile-*.mk
