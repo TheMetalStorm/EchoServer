@@ -10,18 +10,23 @@
 #define RCVBUFSIZE 255
 #define BACKLOG 5
 
+typedef struct echo_data{
+	int fd;
+	char* ip_addr;	
+} echo_data;
+
 void HandleTCPClient(struct epoll_event event){
 	char buf[RCVBUFSIZE];
 	int recvMessageSize;
-	
+	echo_data *data = ((echo_data*)event.data.ptr);	
 	for(;;){
 		bzero(buf, sizeof(buf));
-		recvMessageSize = read(event.data.fd, buf, RCVBUFSIZE);		
+		recvMessageSize = read(data->fd, buf, RCVBUFSIZE);		
 	
 		if(recvMessageSize <= 0)
 			break;
 	 	else {
-			write(event.data.fd, buf, strlen(buf));
+			write(data->fd, buf, strlen(buf));
 		}
 	}	
 
@@ -61,10 +66,13 @@ int main(int argc, char const* argv[]){
 		perror("epoll_create1");
 		return -1;		
 	}
+	
+	echo_data *e = malloc(sizeof(echo_data));
+       	e->fd = servsock;
+	e->ip_addr = NULL; 	
 
+	ev.data.ptr = e; 
 	ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
-	ev.data.fd = servsock;
-
 	int epoll_ctl_res = epoll_ctl(epollfd, EPOLL_CTL_ADD, servsock, &ev);
 	
 	if(epoll_ctl_res == -1){
@@ -81,7 +89,7 @@ int main(int argc, char const* argv[]){
 		
 		int n;
 		for (n = 0; n< nfds; ++n){
-			if(events[n].data.fd == servsock){
+			if(((echo_data*)events[n].data.ptr)->fd == servsock){
 				// new connection				
 				clientLen = sizeof(echoClientAddr);
 				if((clientsock = accept(servsock, (struct sockaddr *) &echoClientAddr, &clientLen))<0){
@@ -96,9 +104,14 @@ int main(int argc, char const* argv[]){
   					perror("calling fcntl");
 					return -1;
 				}				
+				
+				echo_data *data = malloc(sizeof(echo_data));
+				data->fd = clientsock;
+				data->ip_addr = strdup(inet_ntoa(echoClientAddr.sin_addr));
+				
+				ev.data.ptr = data;
 				ev.events = EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP ;
-				ev.data.fd = clientsock;
-
+				
 				if(epoll_ctl(epollfd, EPOLL_CTL_ADD, clientsock, &ev) == -1){
 					perror("epoll ctl: clientsock");
 					return -1;
@@ -114,12 +127,13 @@ int main(int argc, char const* argv[]){
 
 			if (events[n].events & (EPOLLRDHUP | EPOLLHUP)) {
 				
-				puts("Closing connection");	
+				printf("Closing connection to: %s\n", ((echo_data*)events[n].data.ptr)->ip_addr);	
 				
 				epoll_ctl(epollfd, EPOLL_CTL_DEL,
-					  events[n].data.fd, NULL);
+					  ((echo_data*)events[n].data.ptr)->fd, NULL);
 
 				close(clientsock);
+				// TODO free some shit per client
 				continue;
 			}
 		
