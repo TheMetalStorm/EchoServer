@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
-
+#include <fcntl.h>
 
 /**
  * Establishes a socket connection to a server on the specified port.
@@ -76,4 +76,8 @@ int bindAndListen(int servsock, struct sockaddr_in echoServerAddr, int maxNumCon
 	}
 
 	return 0;
+}
+
+int setnonblocking(int fd){
+	return fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
 }
