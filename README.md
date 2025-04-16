@@ -1,5 +1,5 @@
 # Echo Server
-TCP Echo Server and Client, written in C. Server can handle multiple client connections by using epoll(). 
+TCP Echo Server and Client, written in C. Server can handle multiple client connections concurrently by using epoll(). 
 
 # Build
 - run ```make```
