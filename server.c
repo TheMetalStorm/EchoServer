@@ -8,7 +8,7 @@
 #include "SimiTCP.h"
 
 #define RCVBUFSIZE 255
-#define BACKLOG 5
+#define BACKLOG 128
 
 typedef struct echo_data{
 	int fd;
