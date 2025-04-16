@@ -145,6 +145,9 @@ int main(int argc, char const* argv[]){
 
 	}	
 
+	close(servsock);
+	free(e);
+
 	return 0;	
 }
 
