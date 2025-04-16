@@ -126,14 +126,16 @@ int main(int argc, char const* argv[]){
 			}
 
 			if (events[n].events & (EPOLLRDHUP | EPOLLHUP)) {
-				
-				printf("Closing connection to: %s\n", ((echo_data*)events[n].data.ptr)->ip_addr);	
+				echo_data *data = (echo_data*)events[n].data.ptr;
+				printf("Closing connection to: %s\n", data->ip_addr);	
 				
 				epoll_ctl(epollfd, EPOLL_CTL_DEL,
-					  ((echo_data*)events[n].data.ptr)->fd, NULL);
-
+					  data->fd, NULL);
+				
 				close(clientsock);
-				// TODO free some shit per client
+				close(data->fd);
+				free(data->ip_addr);
+				free(data);
 				continue;
 			}
 		
