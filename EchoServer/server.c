@@ -34,10 +34,15 @@ void HandleTCPClient(struct epoll_event event){
 
 int main(int argc, char const* argv[]){
 	
+	if (argc < 2) {
+     		fprintf(stderr,"usage: %s port_number\n",argv[0]);
+        	exit(1);
+    	}
+	
 	int servsock, clientsock, nfds, epollfd;
 	struct epoll_event ev, events[BACKLOG];
 	struct sockaddr_in echoServerAddr, echoClientAddr;
-	unsigned short echoServerPort = 1234;
+	unsigned short echoServerPort = atoi(argv[1]);
      	unsigned int clientLen;	
 
 	servsock = socket(PF_INET, SOCK_STREAM,IPPROTO_TCP);

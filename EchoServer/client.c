@@ -12,9 +12,14 @@
 #define BUFSIZE 1024
 
 int main(int argc, char const* argv[]){
-	
+
+	if (argc < 2) {
+        	fprintf(stderr,"usage: %s port_number\n",argv[0]);
+        	exit(1);
+    	}	
+
 	int sfd = -1;
-	const char* serverPort = "1234";
+	const char* serverPort = argv[1];
 	struct addrinfo hints;
 	char buf[BUFSIZE];
 
