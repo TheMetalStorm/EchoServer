@@ -16,7 +16,7 @@ int main(int argc, char const* argv[]){
 	int sfd = -1;
 	const char* serverPort = "1234";
 	struct addrinfo hints;
-	char inbuf[BUFSIZE], outbuf[BUFSIZE];
+	char buf[BUFSIZE];
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_INET;
@@ -31,7 +31,7 @@ int main(int argc, char const* argv[]){
 	for(;;){
 		printf("Input message to Echo: ");
 		
-		char* getRes = fgets(outbuf, BUFSIZE, stdin);
+		char* getRes = fgets(buf, BUFSIZE, stdin);
 
 		if (getRes == NULL) {
             		perror("Error reading input");
@@ -42,26 +42,26 @@ int main(int argc, char const* argv[]){
 		 }
 
 
-		len = strlen(outbuf);
-        	if (len > 0 && outbuf[len-1] == '\n') {
-            		outbuf[len-1] = '\0'; // Remove newline
+		len = strlen(buf);
+        	if (len > 0 && buf[len-1] == '\n') {
+            		buf[len-1] = '\0'; // Remove newline
             		len--;
         	}
 
-		if(write(sfd, outbuf, len) != len){
+		if(write(sfd, buf, len) != len){
 			perror("Error on message send");
 			return 1;
 		}	
 
-		int n = read(sfd, inbuf, BUFSIZE-1);
+		int n = read(sfd, buf, BUFSIZE-1);
         	if(n <= 0) {
             		perror("Error on read or connection closed");
             		break;
         	}
         
-        	inbuf[n] = '\0';
+        	buf[n] = '\0';
 	      
-		printf("Received message from server: %s\n", inbuf);
+		printf("Received message from server: %s\n", buf);
 	}
 
 	return 0;
