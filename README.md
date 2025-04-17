@@ -1,11 +1,16 @@
-# Echo Server
+# Experimenting with Sockets
+
+## Echo Server & Client
 TCP Echo Server and Client, written in C. Server can handle multiple client connections concurrently by using epoll(). 
 
-# Build
+### Build
 - run ```make```
 
-# Usage
+### Usage
 - run ```./server```
 - run (up to 128) ```./client``` instances
   
 Enjoy the echo
+
+## Chat Server & Client
+WIP :)
