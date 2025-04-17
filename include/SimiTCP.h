@@ -22,14 +22,14 @@
  * @note              The caller is responsible for closing the socket (if successful).
  * @warning           If `sfd` or `serverPort` is NULL, the function fails immediately.
  */
-int connectTo(int* sfd, const char* serverPort, struct addrinfo hints){
+int connectTo(int* sfd, const char* serverAddr, const char* serverPort, struct addrinfo hints){
 	if (!sfd || !serverPort) {
         	fprintf(stderr, "Invalid arguments\n");
         	return 1;
 	}
 
 	struct addrinfo *result, *rp;
-	int s = getaddrinfo(NULL, serverPort, &hints, &result);
+	int s = getaddrinfo(serverAddr, serverPort, &hints, &result);
 
 	if(s != 0){
 		perror("Error on getaddrinfo");

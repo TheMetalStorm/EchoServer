@@ -13,13 +13,14 @@
 
 int main(int argc, char const* argv[]){
 
-	if (argc < 2) {
-        	fprintf(stderr,"usage: %s port_number\n",argv[0]);
+	if (argc < 3) {
+        	fprintf(stderr,"usage: %s ip_address port_number\n",argv[0]);
         	exit(1);
     	}	
 
 	int sfd = -1;
-	const char* serverPort = argv[1];
+	const char* ipToConnectTo = argv[1];
+	const char* serverPort = argv[2];
 	struct addrinfo hints;
 	char buf[BUFSIZE];
 
@@ -27,9 +28,8 @@ int main(int argc, char const* argv[]){
 	hints.ai_family = PF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = 0;
-	hints.ai_flags = 0;
 
-	if(connectTo(&sfd, serverPort, hints) != 0) return 1;
+	if(connectTo(&sfd, ipToConnectTo, serverPort, hints) != 0) return 1;
 
 	int  	len;
 	
