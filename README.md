@@ -15,5 +15,5 @@ Enjoy the echo
 ## Chat Server & Client
 WIP :)
 
-# Experimenting with Sockets
+# Disclaimer!
 This code is probably unsafe and should not be used by anyone ever, except to learn the basics.
