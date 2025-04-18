@@ -67,20 +67,20 @@ int main(int argc, char const* argv[]){
 
 
         		if(write(sfd, outBuf, len) != len){
-				perror("Error on message send");
-				return 1;
+				//perror("Error on message send");
+				continue;
 			}	
 
 			break;
 		}	
 
 		else{
-   			perror("Error reading input");
-            		return 1;
+   			//perror("Error reading input");
+			continue;
         	}
 
 
-			}
+	}
 	
 	
 	// main loop
