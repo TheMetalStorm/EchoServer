@@ -1,3 +1,6 @@
+// TODO: make input text support common text osp like skiping words etc using readline/editline lib  
+// TODO: Find alternative way to print error and dont crash 
+// TODO: handle resize with SIGWINCH
 #include <stdio.h>
 #include <netdb.h>
 #include <stdlib.h>
@@ -82,7 +85,6 @@ int main(int argc, char const* argv[]){
 	
 	// main loop
 	// TODO: fix weird behaviour when message with more than 1022 chars 
-	// TODO: make input text support common text osp like skiping words etc using readline/editline lib  
 	for(;;){
 		clear();
 		mvprintw(row-1,0,"Input message: ");
