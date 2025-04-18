@@ -49,12 +49,12 @@ int main(int argc, char const* argv[]){
 	
 	int  	len;
 		// username:
-	mvprintw(row-1,0,"Input Username: ");
-	refresh();
-
 
 	for(;;){
-		
+		clear();
+		mvprintw(row-1,0,"Input Username: ");
+		refresh();
+	
 		int userRes = getstr(outBuf);//fgets(outBuf, USERNAMESIZE, stdin);
 	
 
