@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <ncurses.h>
 
 #include "SimiTCP.h"
 
@@ -13,12 +14,22 @@
 #define INBUFSIZE (OUTBUFSIZE * 2)
 #define USERNAMESIZE 64
 
+void deinitNcurses(void){
+	endwin();
+}
+
 int main(int argc, char const* argv[]){
 
 	if (argc < 3) {
         	fprintf(stderr,"usage: %s ip_addr port_number\n",argv[0]);
         	exit(1);
     	}	
+	
+	int row, col;
+	initscr();
+    	getmaxyx(stdscr, row, col); /* get the number of rows and columns */
+	atexit(deinitNcurses);
+	
 	int sfd = -1;
 	const char* ipAddrToConnectTo = argv[1];
 	const char* serverPort = argv[2];
@@ -34,74 +45,80 @@ int main(int argc, char const* argv[]){
 	if(connectTo(&sfd, ipAddrToConnectTo, serverPort, hints) != 0) return 1;
 	
 	int  	len;
-	// username:
+		// username:
+	mvprintw(row-1,0,"Input Username: ");
+	refresh();
+
+
 	for(;;){
-		printf("Input username : ");
-		char* userRes = fgets(outBuf, USERNAMESIZE, stdin);
+		
+		int userRes = getstr(outBuf);//fgets(outBuf, USERNAMESIZE, stdin);
 	
-		if (userRes == NULL) {
-            		perror("Error reading input");
-            		return 1;
-        	}
-		else if(userRes[0] == '\n'){
-		 	continue;
-		 }
+
+		if (userRes == OK) {	
+			len = strlen(outBuf);
+        		if (len > 0 && outBuf[len-1] == '\n') {
+            			outBuf[len-1] = '\0'; // Remove newline
+            			len--;
+        		}
 
 
-		len = strlen(outBuf);
-        	if (len > 0 && outBuf[len-1] == '\n') {
-            		outBuf[len-1] = '\0'; // Remove newline
-            		len--;
-        	}
+        		if(write(sfd, outBuf, len) != len){
+				perror("Error on message send");
+				return 1;
+			}	
 
-		if(write(sfd, outBuf, len) != len){
-			perror("Error on message send");
-			return 1;
+			break;
 		}	
 
-		break;
+		else{
+   			perror("Error reading input");
+            		return 1;
+        	}
 
-	}
+
+			}
+	
 	
 	// main loop
 	// TODO: fix weird behaviour when message with more than 1022 chars 
 	// TODO: make input text support common text osp like skiping words etc using readline/editline lib  
 	for(;;){
-		printf("Input Chat Message: ");
-		
-		// make non blocking so if we dont send we still read		
-		char* getRes = fgets(outBuf, OUTBUFSIZE, stdin);
+		clear();
+		mvprintw(row-1,0,"Input message: ");
+		refresh();
 
-		if (getRes == NULL) {
-            		perror("Error reading input");
-            		return 1;
+		int getRes = getstr(outBuf );
+
+		if (getRes == OK) {
+			len = strlen(outBuf);
+			if (len > 0 && outBuf[len-1] == '\n') {
+            			outBuf[len-1] = '\0'; // Remove newline
+            			len--;
+        		}
+
+			if(write(sfd, outBuf, len) != len){
+				//perror("Error on message send");
+				return 1;
+			}	
+
+		}
+		else{	
+			perror("Error reading input");
+            		return 22;
         	}
-		else if(getRes[0] == '\n'){
-			printf("SKIP\n");
-			continue;
-		 }
 
 
-		len = strlen(outBuf);
-		if (len > 0 && outBuf[len-1] == '\n') {
-            		outBuf[len-1] = '\0'; // Remove newline
-            		len--;
-        	}
-
-		if(write(sfd, outBuf, len) != len){
-			perror("Error on message send");
-			return 1;
-		}	
-		
-		int n = read(sfd, inBuf, INBUFSIZE-1);
-        	if(n <= 0) {
-            		perror("Error on read or connection closed");
-            		break;
-        	}
+			
+		//int n = read(sfd, inBuf, INBUFSIZE-1);
+        	//if(n <= 0) {
+            	//	perror("Error on read or connection closed");
+            	//	break;
+        	//}
         
-        	inBuf[n] = '\0';
+        	//inBuf[n] = '\0';
 	      
-		printf("%s\n", inBuf);
+		//printf("%s\n", inBuf);
 	}
 
 	return 0;
