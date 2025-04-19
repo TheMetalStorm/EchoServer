@@ -30,14 +30,18 @@ void HandleChatMessage(struct epoll_event event, struct epoll_event *all){
 			int outMessageLen = strlen(buf) + strlen(data->username) + 3;
 			char outBuf[outMessageLen];
 			snprintf(outBuf, outMessageLen, "%s: %s", data->username, buf);
-			//for(int i = 0; i > BACKLOG; i++) {
-			//	echo_data *curUserData = ((echo_data*)all[i].data.ptr);	
-			//	if(curUserData->fd != 0 && curUserData->username != 0 ) {
-			//		write(curUserData->fd, outBuf, outMessageLen);	
-			//	}
-			//}
+			for(int i = 0; i < BACKLOG; i++) {
+				//if(all[i].data.ptr == NULL ) continue;
+				echo_data *curUserData = ((echo_data*)all[i].data.ptr);
+				if(curUserData == NULL) continue;
+				printf("fd: %d, username: %s\n", curUserData->fd, curUserData->username);	
+				//if(curUserData->fd != 0 && curUserData->username != 0 ) {
+					write(curUserData->fd, outBuf, outMessageLen);	
+					printf("INFO: wrote %ld chars to user %s\n", strlen(buf), curUserData->username);	
+				//}
+			}
 			
-			write(data->fd, outBuf, outMessageLen);	
+			//write(data->fd, outBuf, outMessageLen);	
 			//write(data->fd, data->username, strlen(data->username));
 			//write(data->fd, ": ", 2);
 			//write(data->fd, buf, strlen(buf));
@@ -166,6 +170,8 @@ int main(int argc, char const* argv[]){
 				close(data->fd);
 				free(data->username);
 				free(data);
+				
+				
 				continue;
 			}
 		
