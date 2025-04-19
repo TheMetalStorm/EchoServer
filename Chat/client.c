@@ -60,7 +60,9 @@ int main(int argc, char const* argv[]){
 
 		if (userRes == OK) {	
 			len = strlen(outBuf);
-        		if (len > 0 && outBuf[len-1] == '\n') {
+        		if(len == 0) continue;
+			
+			if (len > 0 && outBuf[len-1] == '\n') {
             			outBuf[len-1] = '\0'; // Remove newline
             			len--;
         		}
@@ -82,18 +84,20 @@ int main(int argc, char const* argv[]){
 
 	}
 	
+	clear();
+	char *inputMessage = "Input Message: ";
+	int inputMessageLen = strlen(inputMessage);
 	
 	// main loop
 	// TODO: fix weird behaviour when message with more than 1022 chars 
 	for(;;){
-		clear();
-		mvprintw(row-1,0,"Input message: ");
-		refresh();
-
+		mvprintw(row-1,0,"%s",inputMessage);
 		int getRes = getstr(outBuf );
 
 		if (getRes == OK) {
 			len = strlen(outBuf);
+        		if(len == 0) continue;
+			
 			if (len > 0 && outBuf[len-1] == '\n') {
             			outBuf[len-1] = '\0'; // Remove newline
             			len--;
@@ -101,27 +105,33 @@ int main(int argc, char const* argv[]){
 
 			if(write(sfd, outBuf, len) != len){
 				//perror("Error on message send");
-				return 1;
-			}	
+							continue;	
+			}
+			
+			move(row-1, inputMessageLen);
+			clrtoeol();
+
 
 		}
 		else{	
-			perror("Error reading input");
-            		return 22;
+			move(row-1, inputMessageLen);
+			clrtoeol();
+			//perror("Error reading input");
+			//continue;
         	}
 
-
 			
-		//int n = read(sfd, inBuf, INBUFSIZE-1);
-        	//if(n <= 0) {
-            	//	perror("Error on read or connection closed");
-            	//	break;
-        	//}
+		int n = read(sfd, inBuf, INBUFSIZE-1);
+        	if(n <= 0) {
+            		//perror("Error on read or connection closed");
+            		continue;
+        	}
         
-        	//inBuf[n] = '\0';
+        	inBuf[n] = '\0';
 	      
-		//printf("%s\n", inBuf);
+		mvprintw(row-2, 0, "%s\n", inBuf);
+	
+		refresh();
 	}
-
 	return 0;
 }
