@@ -69,6 +69,17 @@ int main(int argc, char const* argv[]){
 		return 1;
 			
 	}
+	
+	int yes = 1;
+	if (setsockopt(servsock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0) {
+    		perror("setsockopt(SO_REUSEADDR) failed");
+    		return 1;
+	}
+
+	if (setsockopt(servsock, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof(yes)) < 0) {
+    		perror("setsockopt(SO_REUSEPORT) failed");
+	}
+	
 	memset(&echoServerAddr, 0, sizeof(echoServerAddr));
 	echoServerAddr.sin_family = AF_INET;
 	echoServerAddr.sin_addr.s_addr = htonl(INADDR_ANY);
