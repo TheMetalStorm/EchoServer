@@ -10,41 +10,43 @@
 #define BUFSIZE 1024 
 #define BACKLOG 128
 
-typedef struct echo_data{
+typedef struct client_data{
 	int fd;
 	char* username;	
 	
-} echo_data;
+} client_data;
 
-void HandleChatMessage(struct epoll_event event, struct epoll_event *all){
+typedef struct client_list{
+	client_data *client_data[BACKLOG];
+	int count;
+	
+} client_list;
+
+void HandleChatMessage(struct epoll_event event, client_list all){
 	char buf[BUFSIZE];
 	int recvMessageSize;
-	echo_data *data = ((echo_data*)event.data.ptr);	
+	client_data *sender = ((client_data*)event.data.ptr);	
 	for(;;){
 		bzero(buf, sizeof(buf));
-		recvMessageSize = read(data->fd, buf, BUFSIZE);		
-		if(recvMessageSize <= 0)
+		recvMessageSize = read(sender->fd, buf, BUFSIZE);		
+		if(recvMessageSize <= 0) {
 			break;
+		}
+		
 	 	else {
-			printf("INFO: read %ld chars from user %s\n", strlen(buf), data->username);	
-			int outMessageLen = strlen(buf) + strlen(data->username) + 3;
+			printf("INFO: read %ld chars from user %s\n", strlen(buf), sender->username);	
+			int outMessageLen = strlen(buf) + strlen(sender->username) + 3;
 			char outBuf[outMessageLen];
-			snprintf(outBuf, outMessageLen, "%s: %s", data->username, buf);
+			snprintf(outBuf, outMessageLen, "%s: %s", sender->username, buf);
 			for(int i = 0; i < BACKLOG; i++) {
-				//if(all[i].data.ptr == NULL ) continue;
-				echo_data *curUserData = ((echo_data*)all[i].data.ptr);
+				client_data *curUserData = ((client_data*)all.client_data[i]);
 				if(curUserData == NULL) continue;
-				printf("fd: %d, username: %s\n", curUserData->fd, curUserData->username);	
-				//if(curUserData->fd != 0 && curUserData->username != 0 ) {
-					write(curUserData->fd, outBuf, outMessageLen);	
-					printf("INFO: wrote %ld chars to user %s\n", strlen(buf), curUserData->username);	
-				//}
+
+				write(curUserData->fd, outBuf, outMessageLen);	
+
+				printf("INFO: wrote %ld chars to user %s\n", strlen(buf), curUserData->username);	
+
 			}
-			
-			//write(data->fd, outBuf, outMessageLen);	
-			//write(data->fd, data->username, strlen(data->username));
-			//write(data->fd, ": ", 2);
-			//write(data->fd, buf, strlen(buf));
 		}
 	}	
 
@@ -58,6 +60,7 @@ int main(int argc, char const* argv[]){
     	}
 	int servsock, clientsock, nfds, epollfd;
 	struct epoll_event ev, events[BACKLOG] = {0};
+	client_list clients = {0};
 	struct sockaddr_in echoServerAddr, echoClientAddr;
 	unsigned short echoServerPort = atoi(argv[1]);
      	unsigned int clientLen;	
@@ -100,7 +103,7 @@ int main(int argc, char const* argv[]){
 		return -1;		
 	}
 	
-	echo_data *e = malloc(sizeof(echo_data));
+	client_data *e = malloc(sizeof(client_data));
        	e->fd = servsock;
 	e->username = NULL; 	
 
@@ -122,7 +125,7 @@ int main(int argc, char const* argv[]){
 		
 		int n;
 		for (n = 0; n< nfds; ++n){
-			if(((echo_data*)events[n].data.ptr)->fd == servsock){
+			if(((client_data*)events[n].data.ptr)->fd == servsock){
 				// new connection				
 				clientLen = sizeof(echoClientAddr);
 				if((clientsock = accept(servsock, (struct sockaddr *) &echoClientAddr, &clientLen))<0){
@@ -133,21 +136,24 @@ int main(int argc, char const* argv[]){
 				char buf[BUFSIZE];
 				int usernameLen = read(clientsock, buf, BUFSIZE-1);
 				buf[usernameLen] = '\0';
-				
-				echo_data *data = malloc(sizeof(echo_data));
-				data->fd = clientsock;
-				data->username = strdup(buf);
-
-				printf("Handling client with username: %s\n", data->username);
 
 				if (setnonblocking(clientsock) == -1){
   					perror("calling fcntl");
 					return -1;
 				}				
-			
+
+
+				client_data *data = malloc(sizeof(client_data));
+				data->fd = clientsock;
+				data->username = strdup(buf);
+				printf("Handling client with username: %s\n", data->username);
+
 				ev.data.ptr = data;
 				ev.events = EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP ;
 				
+				clients.client_data[clients.count] = data;
+				clients.count++;
+
 				if(epoll_ctl(epollfd, EPOLL_CTL_ADD, clientsock, &ev) == -1){
 					perror("epoll ctl: clientsock");
 					return -1;
@@ -156,11 +162,11 @@ int main(int argc, char const* argv[]){
 			}
 
 			else if (events[n].events & EPOLLIN) {
-				HandleChatMessage(events[n], events);
+				HandleChatMessage(events[n], clients);
 			}
 
 			if (events[n].events & (EPOLLRDHUP | EPOLLHUP)) {
-				echo_data *data = (echo_data*)events[n].data.ptr;
+				client_data *data = (client_data*)events[n].data.ptr;
 				printf("Closing connection of user: %s\n", data->username);	
 				
 				epoll_ctl(epollfd, EPOLL_CTL_DEL,
