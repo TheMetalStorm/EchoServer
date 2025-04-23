@@ -67,12 +67,12 @@ int main(int argc, char const* argv[]){
         		if(len == 0) continue;
 			
 			if (len > 0 && outBuf[len-1] == '\n') {
-            			outBuf[len-1] = '\0'; // Remove newline
-            			len--;
-        		}
+            		outBuf[len-1] = '\0'; // Remove newline
+            		len--;
+        	}
 
 
-        		if(write(sfd, outBuf, len) != len){
+        	if(write(sfd, outBuf, len) != len){
 				//perror("Error on message send");
 				continue;
 			}	
