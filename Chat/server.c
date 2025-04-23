@@ -145,6 +145,11 @@ int main(int argc, char const* argv[]){
 
 				client_data *data = malloc(sizeof(client_data));
 				data->fd = clientsock;
+				
+				if(buf[strlen(buf)-1] == '\n'){
+					buf[strlen(buf)-1] = '\0';
+				}
+
 				data->username = strdup(buf);
 				printf("Handling client with username: %s\n", data->username);
 
