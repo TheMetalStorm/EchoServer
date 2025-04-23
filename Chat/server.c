@@ -38,7 +38,7 @@ void HandleChatMessage(struct epoll_event event, client_list all){
 			int outMessageLen = strlen(buf) + strlen(sender->username) + 3;
 			char outBuf[outMessageLen];
 			snprintf(outBuf, outMessageLen, "%s: %s", sender->username, buf);
-			for(int i = 0; i < BACKLOG; i++) {
+			for(int i = 0; i < all.count; i++) {
 				client_data *curUserData = ((client_data*)all.client_data[i]);
 				if(curUserData == NULL) continue;
 
@@ -169,6 +169,13 @@ int main(int argc, char const* argv[]){
 				client_data *data = (client_data*)events[n].data.ptr;
 				printf("Closing connection of user: %s\n", data->username);	
 				
+				for(int i = 0; i < clients.count; i++){
+					if(clients.client_data[i] == data){
+						clients.client_data[i] = clients.client_data[--clients.count];
+						break;
+					}
+				}
+
 				epoll_ctl(epollfd, EPOLL_CTL_DEL,
 					  data->fd, NULL);
 				
