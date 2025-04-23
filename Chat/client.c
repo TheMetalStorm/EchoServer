@@ -1,10 +1,12 @@
 // TODO: make input text support common text osp like skiping words etc using readline/editline lib  
 // TODO: Find alternative way to print error and dont crash 
 // TODO: handle resize with SIGWINCH
+#include <stdbool.h>
 #include <stdio.h>
 #include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -30,7 +32,7 @@ int main(int argc, char const* argv[]){
 	
 	int row, col;
 	initscr();
-    	getmaxyx(stdscr, row, col); /* get the number of rows and columns */
+    getmaxyx(stdscr, row, col); /* get the number of rows and columns */
 	atexit(deinitNcurses);
 	
 	int sfd = -1;
@@ -47,6 +49,8 @@ int main(int argc, char const* argv[]){
 
 	if(connectTo(&sfd, ipAddrToConnectTo, serverPort, hints) != 0) return 1;
 	
+	//setnonblocking(sfd);
+	nodelay(stdscr, true);
 	int  	len;
 		// username:
 
@@ -76,10 +80,10 @@ int main(int argc, char const* argv[]){
 			break;
 		}	
 
-		else{
+		else {
    			//perror("Error reading input");
-			continue;
-        	}
+			//continue;
+        }
 
 
 	}
@@ -92,46 +96,40 @@ int main(int argc, char const* argv[]){
 	// TODO: fix weird behaviour when message with more than 1022 chars 
 	for(;;){
 		mvprintw(row-1,0,"%s",inputMessage);
-		int getRes = getstr(outBuf );
+		int getStrRes = getstr(outBuf );
+		if (getStrRes == OK) {
 
-		if (getRes == OK) {
 			len = strlen(outBuf);
-        		if(len == 0) continue;
-			
-			if (len > 0 && outBuf[len-1] == '\n') {
-            			outBuf[len-1] = '\0'; // Remove newline
-            			len--;
-        		}
 
-			if(write(sfd, outBuf, len) != len){
-				//perror("Error on message send");
-							continue;	
+			if (outBuf[len-1] == '\n') {
+				outBuf[len-1] = '\0'; // Remove newline
+				len--;
 			}
 			
+			if(write(sfd, outBuf, len) != len){
+				//perror("Error on message send");
+				//continue;	
+			}
+				
 			move(row-1, inputMessageLen);
 			clrtoeol();
-
-
+			refresh();
+			bzero(outBuf, OUTBUFSIZE);
+			//}
 		}
-		else{	
-			move(row-1, inputMessageLen);
-			clrtoeol();
-			//perror("Error reading input");
-			//continue;
-        	}
 
-			
+		
 		int n = read(sfd, inBuf, INBUFSIZE-1);
-        	if(n <= 0) {
-            		//perror("Error on read or connection closed");
-            		continue;
-        	}
+        if(n <= 0) {
+			refresh();
+			continue;
+        }
+
         
-        	inBuf[n] = '\0';
-	      
+        inBuf[n] = '\0';  
 		mvprintw(row-2, 0, "%s\n", inBuf);
-	
 		refresh();
+	
 	}
 	return 0;
 }
