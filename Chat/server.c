@@ -184,8 +184,8 @@ int main(int argc, char const* argv[]){
 				epoll_ctl(epollfd, EPOLL_CTL_DEL,
 					  data->fd, NULL);
 				
-				close(clientsock);
-				close(data->fd);
+				
+				close(data->fd);		
 				free(data->username);
 				free(data);
 				
@@ -199,6 +199,7 @@ int main(int argc, char const* argv[]){
 
 	}	
 
+	close(clientsock);
 	close(servsock);
 	free(e);
 
