@@ -1,6 +1,7 @@
 // TODO: make input text support common text osp like skiping words etc using readline/editline lib  
 // TODO: Find alternative way to print error and dont crash 
 // TODO: handle resize with SIGWINCH
+#include <ncurses.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <netdb.h>
@@ -11,7 +12,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <ncurses.h>
+
 
 #include "SimiTCP.h"
 
@@ -21,6 +22,39 @@
 
 void deinitNcurses(void){
 	endwin();
+}
+
+int getstrnb(char *buf){
+	char c;
+	noecho();
+	c = getch();
+	if(c == -1) {
+		echo();	
+		return -1;
+	}
+
+	if(c == 127){
+		echo();
+		buf[strlen(buf)] = '\0';
+		
+		return -1;
+	}
+
+	buf[strlen(buf)] = c;
+	buf[strlen(buf)+1] = '\0';
+	
+	
+
+	//TODO: check max buffer len
+
+	if(c == '\n') {
+		echo();
+		return 0;
+	}
+	
+	echo();
+	return -1;
+
 }
 
 int main(int argc, char const* argv[]){
@@ -39,7 +73,7 @@ int main(int argc, char const* argv[]){
 	const char* ipAddrToConnectTo = argv[1];
 	const char* serverPort = argv[2];
 	struct addrinfo hints;
-	char outBuf[OUTBUFSIZE], inBuf[INBUFSIZE];
+	char outBuf[OUTBUFSIZE] = {0}, inBuf[INBUFSIZE];
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_INET;
@@ -50,41 +84,43 @@ int main(int argc, char const* argv[]){
 	if(connectTo(&sfd, ipAddrToConnectTo, serverPort, hints) != 0) return 1;
 	
 	//setnonblocking(sfd);
-	nodelay(stdscr, true);
+	//nodelay(stdscr, true);
+	timeout(100);
 	int  	len;
-		// username:
 
 	for(;;){
-		clear();
-		mvprintw(row-1,0,"Input Username: ");
-		refresh();
-	
-		int userRes = getstr(outBuf);//fgets(outBuf, USERNAMESIZE, stdin);
-	
+		//clear();
+		
 
-		if (userRes == OK) {	
+		int userRes = getstrnb(outBuf);//fgets(outBuf, USERNAMESIZE, stdin);
+
+		mvprintw(row-1,0,"Input Username: %s", outBuf);
+
+		//refresh();
+	
+		if (userRes != -1) {	
 			len = strlen(outBuf);
-        		if(len == 0) continue;
-			
-			if (len > 0 && outBuf[len-1] == '\n') {
-            		outBuf[len-1] = '\0'; // Remove newline
-            		len--;
-        	}
+        	if(len != 0) {
+				if (len > 0 && outBuf[len-1] == '\n') {
+						outBuf[len-1] = '\0'; // Remove newline
+						len--;
+				}
 
 
-        	if(write(sfd, outBuf, len) != len){
-				//perror("Error on message send");
-				continue;
+				if(write(sfd, outBuf, len) != len){
+					//perror("Error on message send");
+					continue;
+				}
+
+				break;
 			}	
-
-			break;
 		}	
 
-		else {
-   			//perror("Error reading input");
-			//continue;
-        }
-
+		// else {
+   		// 	//perror("Error reading input");
+		// 	continue;
+        // }
+		refresh();
 
 	}
 	
@@ -96,31 +132,32 @@ int main(int argc, char const* argv[]){
 	// TODO: fix weird behaviour when message with more than 1022 chars 
 	for(;;){
 		mvprintw(row-1,0,"%s",inputMessage);
-		int getStrRes = getstr(outBuf );
-		if (getStrRes == OK) {
+		int getStrRes = getstrnb(outBuf );
+		if (getStrRes != -1) {
 
 			len = strlen(outBuf);
-
-			if (outBuf[len-1] == '\n') {
-				outBuf[len-1] = '\0'; // Remove newline
-				len--;
-			}
-			
-			if(write(sfd, outBuf, len) != len){
-				//perror("Error on message send");
-				//continue;	
-			}
+			if(len != 0) {
+				if (outBuf[len-1] == '\n') {
+					outBuf[len-1] = '\0'; // Remove newline
+					len--;
+				}
 				
-			move(row-1, inputMessageLen);
-			clrtoeol();
-			refresh();
-			bzero(outBuf, OUTBUFSIZE);
-			//}
+				if(write(sfd, outBuf, len) != len){
+					//perror("Error on message send");
+					//continue;	
+				}
+					
+				move(row-1, inputMessageLen);
+				clrtoeol();
+				refresh();
+				bzero(outBuf, OUTBUFSIZE);
+			}
 		}
 
-		
+
+
 		int n = read(sfd, inBuf, INBUFSIZE-1);
-        if(n <= 0) {
+		if(n <= 0) {
 			refresh();
 			continue;
         }
