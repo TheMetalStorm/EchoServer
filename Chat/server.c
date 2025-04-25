@@ -127,11 +127,15 @@ int main(int argc, char const* argv[]){
 		for (n = 0; n< nfds; ++n){
 			if(((client_data*)events[n].data.ptr)->fd == servsock){
 				// new connection				
+				printf("new connection\n");
+				
 				clientLen = sizeof(echoClientAddr);
 				if((clientsock = accept(servsock, (struct sockaddr *) &echoClientAddr, &clientLen))<0){
 					fputs("Error on Accept", stderr);
 					return 1; 
 				}
+
+				printf("fd %d trying to connect!\n", clientsock);
 				
 				char buf[BUFSIZE];
 				int usernameLen = read(clientsock, buf, BUFSIZE-1);
@@ -200,6 +204,11 @@ int main(int argc, char const* argv[]){
 	}	
 
 	close(clientsock);
+	for(int i=0; i<clients.count; i++) {
+    	close(clients.client_data[i]->fd);
+    	free(clients.client_data[i]->username);
+    	free(clients.client_data[i]);
+	}
 	close(servsock);
 	free(e);
 
