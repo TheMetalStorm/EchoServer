@@ -1,6 +1,7 @@
 // TODO: make input text support common text osp like skiping words etc using readline/editline lib  
 // TODO: Find alternative way to print error and dont crash 
 // TODO: handle resize with SIGWINCH
+#include <ctype.h>
 #include <ncurses.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -25,23 +26,28 @@ void deinitNcurses(void){
 }
 
 int getstrnb(char *buf){
-	char c;
-	noecho();
-	c = getch();
+	// cbreak();           // Disable line buffering
+	noecho();    
+    keypad(stdscr, TRUE); // Enable special keys
+
+	char c = getch();
 	if(c == -1) {
 		echo();	
 		return -1;
 	}
 
-	if(c == 127){
-		echo();
-		buf[strlen(buf)] = '\0';
+	else if(c == (char)KEY_BACKSPACE){
 		
+		echo();
+		buf[strlen(buf)-1] = '\0';
 		return -1;
 	}
+	
+	else if(isprint(c)){
+		buf[strlen(buf)] = c;
+		buf[strlen(buf)+1] = '\0';
+	}
 
-	buf[strlen(buf)] = c;
-	buf[strlen(buf)+1] = '\0';
 	
 	
 
@@ -89,17 +95,17 @@ int main(int argc, char const* argv[]){
 	int  	len;
 	bzero(outBuf, OUTBUFSIZE);
 
-	for(;;){
-		//clear();
-		
+	for(;;){		
 
 		int userRes = getstrnb(outBuf);//fgets(outBuf, USERNAMESIZE, stdin);
 
-		mvprintw(row-1,0,"Input Username: %s", outBuf);
+		move(row-1, 0);
+		clrtoeol();
+		printw("Input Username: %s", outBuf);
 
-		//refresh();
 	
 		if (userRes != -1) {	
+
 			len = strlen(outBuf);
         	if(len != 0) {
 
@@ -137,7 +143,10 @@ int main(int argc, char const* argv[]){
 	// TODO: fix weird behaviour when message with more than 1022 chars 
 	for(;;){
 		int getStrRes = getstrnb(outBuf );
-		mvprintw(row-1,0,"%s%s", inputMessage, outBuf);
+		
+		move(row-1, 0);
+		clrtoeol();
+		printw("%s%s", inputMessage, outBuf);
 
 		if (getStrRes != -1) {
 
