@@ -83,7 +83,7 @@ int main(int argc, char const* argv[]){
 
 	if(connectTo(&sfd, ipAddrToConnectTo, serverPort, hints) != 0) return 1;
 	
-	//setnonblocking(sfd);
+	setnonblocking(sfd);
 	//nodelay(stdscr, true);
 	timeout(100);
 	int  	len;
@@ -127,12 +127,14 @@ int main(int argc, char const* argv[]){
 	clear();
 	char *inputMessage = "Input Message: ";
 	int inputMessageLen = strlen(inputMessage);
-	
+	bzero(outBuf, OUTBUFSIZE);
+
 	// main loop
 	// TODO: fix weird behaviour when message with more than 1022 chars 
 	for(;;){
-		mvprintw(row-1,0,"%s",inputMessage);
 		int getStrRes = getstrnb(outBuf );
+		mvprintw(row-1,0,"%s%s", inputMessage, outBuf);
+
 		if (getStrRes != -1) {
 
 			len = strlen(outBuf);
@@ -149,8 +151,9 @@ int main(int argc, char const* argv[]){
 					
 				move(row-1, inputMessageLen);
 				clrtoeol();
-				refresh();
 				bzero(outBuf, OUTBUFSIZE);
+				refresh();
+
 			}
 		}
 
@@ -158,9 +161,9 @@ int main(int argc, char const* argv[]){
 
 		int n = read(sfd, inBuf, INBUFSIZE-1);
 		if(n <= 0) {
-			refresh();
-			continue;
-        }
+		  	refresh();
+		  	continue;
+         }
 
         
         inBuf[n] = '\0';  
