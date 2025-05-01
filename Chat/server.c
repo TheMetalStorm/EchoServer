@@ -139,6 +139,7 @@ int main(int argc, char const* argv[]){
 				
 				char buf[BUFSIZE];
 				int usernameLen = read(clientsock, buf, BUFSIZE-1);
+				
 				buf[usernameLen] = '\0';
 
 				if (setnonblocking(clientsock) == -1){

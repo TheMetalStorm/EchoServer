@@ -87,6 +87,7 @@ int main(int argc, char const* argv[]){
 	//nodelay(stdscr, true);
 	timeout(100);
 	int  	len;
+	bzero(outBuf, OUTBUFSIZE);
 
 	for(;;){
 		//clear();
@@ -101,19 +102,22 @@ int main(int argc, char const* argv[]){
 		if (userRes != -1) {	
 			len = strlen(outBuf);
         	if(len != 0) {
-				if (len > 0 && outBuf[len-1] == '\n') {
-						outBuf[len-1] = '\0'; // Remove newline
-						len--;
+
+					if (outBuf[len-1] == '\n') {
+							outBuf[len-1] = '\0'; // Remove newline
+							len--;
+					}
+
+					if(strlen(outBuf) == 0) continue;
+
+					if(write(sfd, outBuf, len) != len){
+						//perror("Error on message send");
+						//continue;
+					}
+
+					break;
 				}
-
-
-				if(write(sfd, outBuf, len) != len){
-					//perror("Error on message send");
-					continue;
-				}
-
-				break;
-			}	
+				
 		}	
 
 		// else {
