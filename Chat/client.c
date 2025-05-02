@@ -1,11 +1,13 @@
 // TODO: Find alternative way to print error and dont crash 
+
 // TODO: handle resize with SIGWINCH
+
 // TODO: print multi line chat message
 // TODO: display multi line chat message
 // TODO: on new message move existing chat messages up by actual new number of lines
 
-// TODO: when a user is entering his username, the chat messages of other users dont get distributed 
-// sometimes server doesnt recognize client connection
+// TODO: when a user is entering his username, the chat messages of other users dont get send to server / distributed  
+// TODO: sometimes server doesnt recognize client connection --> seems to be port connected
 
 #include <ctype.h>
 #include <ncurses.h>
