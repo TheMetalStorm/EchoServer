@@ -1,10 +1,11 @@
 // TODO: Find alternative way to print error and dont crash 
 // TODO: handle resize with SIGWINCH
-// TODO: print multi line chat
-// TODO: display multi line chat
+// TODO: print multi line chat message
+// TODO: display multi line chat message
 // TODO: on new message move existing chat messages up by actual new number of lines
 
-// TODO: when user AA connects, disconnects and connects again, his words dont get transmitted (could also be same FD problem)
+// TODO: when a user is entering his username, the chat messages of other users dont get distributed 
+// sometimes server doesnt recognize client connection
 
 #include <ctype.h>
 #include <ncurses.h>
