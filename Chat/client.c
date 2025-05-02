@@ -2,7 +2,9 @@
 // TODO: handle resize with SIGWINCH
 // TODO: print multi line chat
 // TODO: display multi line chat
-// TODO: on new message move existing chat messages up
+// TODO: on new message move existing chat messages up by actual new number of lines
+
+// TODO: when user AA connects, disconnects and connects again, his words dont get transmitted (could also be same FD problem)
 
 #include <ctype.h>
 #include <ncurses.h>
@@ -144,6 +146,7 @@ int main(int argc, char const* argv[]){
 
 	// main loop
 	// TODO: fix weird behaviour when message with more than 1022 chars 
+	chtype lineCopyBuf[col];
 	for(;;){
 		int getStrRes = getstrnb(outBuf );
 		
@@ -182,6 +185,23 @@ int main(int argc, char const* argv[]){
          }
 
         
+
+		for (int i = 0; i<=row-2; i++){
+			
+			move(i, 0);
+			inchnstr(lineCopyBuf, sizeof(lineCopyBuf));
+			clrtoeol();
+			for(int j = 0; j<col; j++){
+				move(i-1, j);
+				char c = lineCopyBuf[j] & A_CHARTEXT;
+				printw("%c", c);
+			}
+			
+			
+			
+			bzero(lineCopyBuf, sizeof(lineCopyBuf));
+		}
+
         inBuf[n] = '\0';  
 		mvprintw(row-2, 0, "%s\n", inBuf);
 		refresh();
