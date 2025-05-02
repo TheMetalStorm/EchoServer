@@ -1,6 +1,9 @@
-// TODO: make input text support common text osp like skiping words etc using readline/editline lib  
 // TODO: Find alternative way to print error and dont crash 
 // TODO: handle resize with SIGWINCH
+// TODO: print multi line chat
+// TODO: display multi line chat
+// TODO: on new message move existing chat messages up
+
 #include <ctype.h>
 #include <ncurses.h>
 #include <stdbool.h>
