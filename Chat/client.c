@@ -1,8 +1,6 @@
 // TODO: Find alternative way to print error and dont crash 
  
-// TODO: print multi line chat message
-// TODO: display multi line chat message
-// TODO: on new message move existing chat messages up by actual new number of lines
+// TODO: display message that is longer than col by moving the shown test in INPUTMESSAGEROW
 
 // TODO: sometimes server doesnt recognize client connection --> seems to be port connected
 
@@ -28,6 +26,7 @@
 #define INBUFSIZE (OUTBUFSIZE * 2)
 #define USERNAMESIZE 64
 
+#define INPUTMESSAGEROW (row - 1)
 int col, row;
 
 static void sigwinch_handler(int sig) {
@@ -114,7 +113,7 @@ int main(int argc, char const* argv[]){
 
 		int userRes = getstrnb(outBuf);//fgets(outBuf, USERNAMESIZE, stdin);
 
-		move(row-1, 0);
+		move(INPUTMESSAGEROW, 0);
 		clrtoeol();
 		printw("Input Username: %s", outBuf);
 
@@ -160,7 +159,7 @@ int main(int argc, char const* argv[]){
 	for(;;){
 		int getStrRes = getstrnb(outBuf );
 		
-		move(row-1, 0);
+		move(INPUTMESSAGEROW, 0);
 		clrtoeol();
 		printw("%s%s", inputMessage, outBuf);
 
@@ -178,7 +177,7 @@ int main(int argc, char const* argv[]){
 					//continue;	
 				}
 					
-				move(row-1, inputMessageLen);
+				move(INPUTMESSAGEROW, inputMessageLen);
 				clrtoeol();
 				bzero(outBuf, OUTBUFSIZE);
 				refresh();
@@ -194,15 +193,17 @@ int main(int argc, char const* argv[]){
 		  	continue;
          }
 
-        
+        inBuf[n] = '\0';  
+		int numNewMessageRows = ( strlen(inBuf) + col - 1) / col; 
 
-		for (int i = 0; i<=row-2; i++){
+
+		for (int i = 0; i<=INPUTMESSAGEROW - 1; i++){
 			
 			move(i, 0);
 			inchnstr(lineCopyBuf, sizeof(lineCopyBuf));
 			clrtoeol();
 			for(int j = 0; j<col; j++){
-				move(i-1, j);
+				move(i - numNewMessageRows, j);
 				char c = lineCopyBuf[j] & A_CHARTEXT;
 				printw("%c", c);
 			}
@@ -212,8 +213,8 @@ int main(int argc, char const* argv[]){
 			bzero(lineCopyBuf, sizeof(lineCopyBuf));
 		}
 
-        inBuf[n] = '\0';  
-		mvprintw(row-2, 0, "%s\n", inBuf);
+  
+		mvprintw(INPUTMESSAGEROW - numNewMessageRows, 0, "%s\n", inBuf);
 		refresh();
 	
 	}
