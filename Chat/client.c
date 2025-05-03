@@ -6,6 +6,8 @@
 
 // TODO: sometimes server doesnt recognize client connection --> seems to be port connected
 
+// TODO: term resize sometimes dont work so good
+
 #include <ctype.h>
 #include <ncurses.h>
 #include <stdbool.h>
