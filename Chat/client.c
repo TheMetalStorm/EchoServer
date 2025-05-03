@@ -1,7 +1,5 @@
 // TODO: Find alternative way to print error and dont crash 
-
-// TODO: handle resize with SIGWINCH
-
+ 
 // TODO: print multi line chat message
 // TODO: display multi line chat message
 // TODO: on new message move existing chat messages up by actual new number of lines
@@ -21,13 +19,21 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
-
+#include <signal.h>
 
 #include "SimiTCP.h"
 
 #define OUTBUFSIZE 1024
 #define INBUFSIZE (OUTBUFSIZE * 2)
 #define USERNAMESIZE 64
+
+int col, row;
+
+static void sigwinch_handler(int sig) {
+	clear();
+	getmaxyx(stdscr, row, col); 
+	resize_term(row, col); 
+}
 
 void deinitNcurses(void){
 	endwin();
@@ -73,12 +79,12 @@ int getstrnb(char *buf){
 
 int main(int argc, char const* argv[]){
 
+	signal(SIGWINCH, sigwinch_handler);
 	if (argc < 3) {
         	fprintf(stderr,"usage: %s ip_addr port_number\n",argv[0]);
         	exit(1);
     	}	
 	
-	int row, col;
 	initscr();
     getmaxyx(stdscr, row, col); /* get the number of rows and columns */
 	atexit(deinitNcurses);
