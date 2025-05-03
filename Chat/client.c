@@ -4,7 +4,6 @@
 // TODO: display multi line chat message
 // TODO: on new message move existing chat messages up by actual new number of lines
 
-// TODO: when a user is entering his username, the chat messages of other users dont get send to server / distributed  
 // TODO: sometimes server doesnt recognize client connection --> seems to be port connected
 
 #include <ctype.h>
@@ -30,9 +29,9 @@
 int col, row;
 
 static void sigwinch_handler(int sig) {
-	clear();
 	getmaxyx(stdscr, row, col); 
 	resize_term(row, col); 
+	clear();
 }
 
 void deinitNcurses(void){

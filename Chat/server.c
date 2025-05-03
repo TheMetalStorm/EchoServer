@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/epoll.h>
+#include <stdbool.h>
 
 #include "SimiTCP.h"
 
@@ -13,7 +14,7 @@
 typedef struct client_data{
 	int fd;
 	char* username;	
-	
+	bool gotUsername;
 } client_data;
 
 typedef struct client_list{
@@ -106,6 +107,7 @@ int main(int argc, char const* argv[]){
 	client_data *e = malloc(sizeof(client_data));
        	e->fd = servsock;
 	e->username = NULL; 	
+	e->gotUsername = false;
 
 	ev.data.ptr = e; 
 	ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
@@ -124,56 +126,67 @@ int main(int argc, char const* argv[]){
 		} 
 		
 		int n;
-		for (n = 0; n< nfds; ++n){
+		for (n = 0; n< nfds; ++n){	
 			if(((client_data*)events[n].data.ptr)->fd == servsock){
 				// new connection				
-				printf("new connection\n");
-				
 				clientLen = sizeof(echoClientAddr);
 				if((clientsock = accept(servsock, (struct sockaddr *) &echoClientAddr, &clientLen))<0){
 					fputs("Error on Accept", stderr);
 					return 1; 
 				}
 
-				printf("fd %d trying to connect!\n", clientsock);
-				
-				char buf[BUFSIZE];
-				int usernameLen = read(clientsock, buf, BUFSIZE-1);
-				
-				buf[usernameLen] = '\0';
-
 				if (setnonblocking(clientsock) == -1){
-  					perror("calling fcntl");
+					perror("calling fcntl");
 					return -1;
-				}				
-
-
-				client_data *data = malloc(sizeof(client_data));
-				data->fd = clientsock;
-				
-				if(buf[strlen(buf)-1] == '\n'){
-					buf[strlen(buf)-1] = '\0';
 				}
 
-				data->username = strdup(buf);
-				printf("Handling client with username: %s\n", data->username);
+				printf("fd %d trying to connect!\n", clientsock);
+				
+				client_data *data = malloc(sizeof(client_data));
+				data->fd = clientsock;
+				data->username = NULL;
+				data->gotUsername = false;
 
 				ev.data.ptr = data;
 				ev.events = EPOLLIN | EPOLLET | EPOLLRDHUP | EPOLLHUP ;
+
 				
-				clients.client_data[clients.count] = data;
-				clients.count++;
 
 				if(epoll_ctl(epollfd, EPOLL_CTL_ADD, clientsock, &ev) == -1){
 					perror("epoll ctl: clientsock");
 					return -1;
 				}
-
 			}
 
-			else if (events[n].events & EPOLLIN) {
-				HandleChatMessage(events[n], clients);
+			if(events[n].events & EPOLLIN ){
+				client_data *data = (client_data*)events[n].data.ptr;
+				if(data->gotUsername == false){
+					char buf[BUFSIZE];
+					int usernameLen = read(data->fd, buf, BUFSIZE-1);
+					
+					if(usernameLen > 0){
+			
+						buf[usernameLen] = '\0';
+
+						
+						if(buf[strlen(buf)-1] == '\n'){
+							buf[strlen(buf)-1] = '\0';
+						}
+
+						data->username = strdup(buf);
+						data->gotUsername = true;					
+						printf("Handling client with username: %s\n", data->username);
+
+						clients.client_data[clients.count] = data;
+				clients.count++;	
+					}
+				}
+				else {
+					HandleChatMessage(events[n], clients);
+				}
 			}
+			
+			
 
 			if (events[n].events & (EPOLLRDHUP | EPOLLHUP)) {
 				client_data *data = (client_data*)events[n].data.ptr;
