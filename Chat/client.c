@@ -1,9 +1,6 @@
-// TODO: Find alternative way to print error and dont crash 
- 
-// TODO: display message that is longer than col by moving the shown test in INPUTMESSAGEROW
-
+// TODO: print error on INFOROW 
+// TODO: display message that is longer than col by moving the shown text in INPUTMESSAGEROW
 // TODO: sometimes server doesnt recognize client connection --> seems to be port connected
-
 // TODO: term resize sometimes dont work so good
 
 #include <ctype.h>

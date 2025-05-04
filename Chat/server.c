@@ -1,3 +1,4 @@
+//TODO: client send -> netcat receive : no newline (maybe send newline )
 #include <stdio.h> 
 #include <arpa/inet.h>
 #include <string.h>
