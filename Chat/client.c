@@ -36,7 +36,6 @@
 #define LOWERTEXTBOUND (INPUTBORDERROW - 1) 
 
 int col, row;
-
 void drawHorizontalLine(int y_pos){
 	for (int x = 0; x < col; x++) {
         mvaddch(y_pos, x, ACS_HLINE); // Using ncurses' horizontal line character
@@ -174,6 +173,7 @@ int main(int argc, char const* argv[]){
 		drawHorizontalLine(INFOBORDERROW);
 		drawHorizontalLine(INPUTBORDERROW);
 
+
 		int getStrRes = getstrnb(outBuf );
 		
 		move(INPUTMESSAGEROW, 0);
@@ -211,7 +211,7 @@ int main(int argc, char const* argv[]){
          }
 
         inBuf[n] = '\0';  
-		int numNewMessageRows = (( strlen(inBuf) + col - 1) / col + 1); 
+		int numNewMessageRows = (( strlen(inBuf) + col - 1) / col ) ; 
 
 
 		for (int i = UPPERTEXTMAX; i<=LOWERTEXTBOUND ; i++){			
@@ -226,7 +226,7 @@ int main(int argc, char const* argv[]){
 			bzero(lineCopyBuf, sizeof(lineCopyBuf));
 		}
   
-		mvprintw(LOWERTEXTBOUND  - numNewMessageRows , 0, "%s\n", inBuf);
+		mvprintw(LOWERTEXTBOUND + 1 - numNewMessageRows , 0, "%s\n", inBuf);
 		refresh();
 	
 	}
