@@ -26,9 +26,22 @@
 #define INBUFSIZE (OUTBUFSIZE * 2)
 #define USERNAMESIZE 64
 
-#define INPUTMESSAGEROW (row - 1)
-int col, row;
 
+#define INFOROW 0
+#define INFOBORDERROW (INFOROW + 1)
+#define UPPERTEXTMAX (INFOBORDERROW + 1) 
+
+#define INPUTMESSAGEROW (row - 1)
+#define INPUTBORDERROW (INPUTMESSAGEROW - 1)
+#define LOWERTEXTBOUND (INPUTBORDERROW - 1) 
+
+int col, row;
+void drawHorizontalLine(int y_pos){
+	for (int x = 0; x < col; x++) {
+        mvaddch(y_pos, x, ACS_HLINE); // Using ncurses' horizontal line character
+    }
+}
+    
 static void sigwinch_handler(int sig) {
 	getmaxyx(stdscr, row, col); 
 	resize_term(row, col); 
@@ -110,14 +123,14 @@ int main(int argc, char const* argv[]){
 	bzero(outBuf, OUTBUFSIZE);
 
 	for(;;){		
-
+		drawHorizontalLine(INFOBORDERROW);
+		drawHorizontalLine(INPUTBORDERROW);
+		
 		int userRes = getstrnb(outBuf);//fgets(outBuf, USERNAMESIZE, stdin);
 
 		move(INPUTMESSAGEROW, 0);
 		clrtoeol();
 		printw("Input Username: %s", outBuf);
-
-	
 		if (userRes != -1) {	
 
 			len = strlen(outBuf);
@@ -157,6 +170,9 @@ int main(int argc, char const* argv[]){
 	// TODO: fix weird behaviour when message with more than 1022 chars 
 	chtype lineCopyBuf[col];
 	for(;;){
+		drawHorizontalLine(INFOBORDERROW);
+		drawHorizontalLine(INPUTBORDERROW);
+
 		int getStrRes = getstrnb(outBuf );
 		
 		move(INPUTMESSAGEROW, 0);
@@ -197,7 +213,7 @@ int main(int argc, char const* argv[]){
 		int numNewMessageRows = ( strlen(inBuf) + col - 1) / col; 
 
 
-		for (int i = 0; i<=INPUTMESSAGEROW - 1; i++){
+		for (int i = UPPERTEXTMAX; i<=LOWERTEXTBOUND ; i++){
 			
 			move(i, 0);
 			inchnstr(lineCopyBuf, sizeof(lineCopyBuf));
@@ -212,9 +228,8 @@ int main(int argc, char const* argv[]){
 			
 			bzero(lineCopyBuf, sizeof(lineCopyBuf));
 		}
-
   
-		mvprintw(INPUTMESSAGEROW - numNewMessageRows, 0, "%s\n", inBuf);
+		mvprintw(LOWERTEXTBOUND + 1 - numNewMessageRows , 0, "%s\n", inBuf);
 		refresh();
 	
 	}
