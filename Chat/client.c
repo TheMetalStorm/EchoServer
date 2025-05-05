@@ -223,7 +223,7 @@ int main(int argc, char const* argv[]){
 			bzero(lineCopyBuf, sizeof(lineCopyBuf));
 		}
   
-		mvprintw(LOWERTEXTBOUND + 1 - numNewMessageRows , 0, "%s\n", inBuf);
+		mvprintw(LOWERTEXTBOUND + 1 - numNewMessageRows , 0, "%s", inBuf);
 		refresh();
 	
 	}

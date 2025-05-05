@@ -1,4 +1,3 @@
-//TODO: client send -> netcat receive : no newline (maybe send newline )
 #include <stdio.h> 
 #include <arpa/inet.h>
 #include <string.h>
@@ -35,11 +34,15 @@ void HandleChatMessage(struct epoll_event event, client_list all){
 			break;
 		}
 		
+
 	 	else {
+			if(buf[strlen(buf)-1] == '\n'){
+				buf[strlen(buf)-1] = '\0';
+			}
 			printf("INFO: read %ld chars from user %s\n", strlen(buf), sender->username);	
-			int outMessageLen = strlen(buf) + strlen(sender->username) + 3;
+			int outMessageLen = strlen(buf) + strlen(sender->username) + 4;
 			char outBuf[outMessageLen];
-			snprintf(outBuf, outMessageLen, "%s: %s", sender->username, buf);
+			snprintf(outBuf, outMessageLen, "%s: %s\n", sender->username, buf);
 			for(int i = 0; i < all.count; i++) {
 				client_data *curUserData = ((client_data*)all.client_data[i]);
 				if(curUserData == NULL) continue;
