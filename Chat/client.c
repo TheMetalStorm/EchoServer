@@ -1,4 +1,3 @@
-// TODO: print error on INFOROW 
 // TODO: display message that is longer than col by moving the shown text in INPUTMESSAGEROW
 // TODO: sometimes server doesnt recognize client connection --> seems to be port connected
 // TODO: term resize sometimes dont work so good
@@ -133,27 +132,31 @@ int main(int argc, char const* argv[]){
 			len = strlen(outBuf);
         	if(len != 0) {
 
-					if (outBuf[len-1] == '\n') {
-							outBuf[len-1] = '\0'; // Remove newline
-							len--;
-					}
-
-					if(strlen(outBuf) == 0) continue;
-
-					if(write(sfd, outBuf, len) != len){
-						//perror("Error on message send");
-						//continue;
-					}
-
-					break;
+				if (outBuf[len-1] == '\n') {
+					outBuf[len-1] = '\0'; // Remove newline
+					len--;
 				}
+
+				if(strlen(outBuf) == 0) continue;
+
+				if(write(sfd, outBuf, len) != len){
+					move(INFOROW, 0);
+					clrtoeol();
+					printw("Error on Username send! Please try again!");
+					refresh();
+					continue;
+				}
+
+				break;
+			}
+			else {
+				move(INFOROW, 0);
+				clrtoeol();
+				printw("Username is empty!");
+   			}
 				
 		}	
-
-		// else {
-   		// 	//perror("Error reading input");
-		// 	continue;
-        // }
+		
 		refresh();
 
 	}
@@ -181,14 +184,19 @@ int main(int argc, char const* argv[]){
 
 			len = strlen(outBuf);
 			if(len != 0) {
+				move(INFOROW, 0);
+				clrtoeol();
 				if (outBuf[len-1] == '\n') {
 					outBuf[len-1] = '\0'; // Remove newline
 					len--;
 				}
 				
 				if(write(sfd, outBuf, len) != len){
-					//perror("Error on message send");
-					//continue;	
+					move(INFOROW, 0);
+					clrtoeol();
+					printw("Error on Message send! Please try again!");
+					refresh();
+					continue;
 				}
 					
 				move(INPUTMESSAGEROW, inputMessageLen);
@@ -197,6 +205,11 @@ int main(int argc, char const* argv[]){
 				refresh();
 
 			}
+			else {
+				move(INFOROW, 0);
+				clrtoeol();
+				printw("Message is empty!");
+   			}
 		}
 
 
@@ -206,6 +219,9 @@ int main(int argc, char const* argv[]){
 		  	refresh();
 		  	continue;
          }
+
+
+		// Message is fine and will be sent
 
         inBuf[n] = '\0';  
 		int numNewMessageRows = (( strlen(inBuf) + col - 1) / col ) ; 
@@ -224,6 +240,10 @@ int main(int argc, char const* argv[]){
 		}
   
 		mvprintw(LOWERTEXTBOUND + 1 - numNewMessageRows , 0, "%s", inBuf);
+		
+		move(INFOROW, 0);
+		clrtoeol();
+		
 		refresh();
 	
 	}
