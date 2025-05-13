@@ -1,4 +1,3 @@
-// TODO: display message that is longer than col by moving the shown text in INPUTMESSAGEROW
 // TODO: sometimes server doesnt recognize client connection --> seems to be port connected
 // TODO: term resize sometimes dont work so good
 
@@ -178,7 +177,19 @@ int main(int argc, char const* argv[]){
 		
 		move(INPUTMESSAGEROW, 0);
 		clrtoeol();
-		printw("%s%s", inputMessage, outBuf);
+		
+		int messagLen  = strlen(outBuf);
+		int spaceForMessage = col - inputMessageLen;
+		//mvprintw(20 , 20, "Space for message %d", spaceForMessage);
+		if(messagLen > spaceForMessage){
+			char visible[INPUTMESSAGEROW];
+			int diff = messagLen - spaceForMessage;
+			memcpy(visible, outBuf + diff, messagLen - diff );
+			printw("%s%s", inputMessage, visible);
+		}
+		else{
+			printw("%s%s", inputMessage, outBuf);
+		}
 
 		if (getStrRes != -1) {
 
