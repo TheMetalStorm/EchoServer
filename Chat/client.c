@@ -1,5 +1,6 @@
 // TODO: sometimes server doesnt recognize client connection --> seems to be port connected
 // TODO: term resize sometimes dont work so good
+// TODO: when username or message len greater than buf lenght, give user error that only x bytes were sent
 
 #include <ctype.h>
 #include <ncurses.h>
