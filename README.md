@@ -14,7 +14,7 @@ TCP Echo Server and Client, written in C. Server can handle multiple client conn
   
 Enjoy the echo
 
-## Chat Server & Client (WIP)
+## Chat Server & Client 
 TCP Chat Server and Client, written in C. Server can handle multiple client connections concurrently by using epoll(). 
 Use the included Client to have a nice chat experience, alternatively netcat works as well.
 
