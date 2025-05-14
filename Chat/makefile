@@ -1,7 +1,7 @@
 # This is a comment line
 CC=gcc
 # CFLAGS will be the options passed to the compiler.
-CFLAGS= -g -c -Wall -I../include 
+CFLAGS= -g -c -Wall -I../include  -g 
 CLIBS= -lncurses
 all: server client
 
